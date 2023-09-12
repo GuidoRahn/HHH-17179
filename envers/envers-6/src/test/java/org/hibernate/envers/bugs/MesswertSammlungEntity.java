@@ -26,7 +26,7 @@ public class MesswertSammlungEntity {
 	}
 
 	@Id
-	@JavaType(ObjectIdJavaType.class)
+	@JavaType(ObjectIdUserType.class)
 	@JdbcType(VarcharJdbcType.class)
 	@Column(length = 36)
 	ObjectId objectId;

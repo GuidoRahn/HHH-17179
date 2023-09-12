@@ -59,7 +59,7 @@ public class EnversUnitTestCase extends AbstractEnversTestCase {
 
 	// Add your tests, using standard JUnit.
 	@Test
-	public void hhh17179Test() throws Exception {
+	public void hhh17179Test()  {
 		AuditReader reader = getAuditReader();
 
 		Session session = openSession();
