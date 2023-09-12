@@ -6,10 +6,15 @@
  */
 package org.hibernate.envers.bugs;
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.envers.AuditReader;
 import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * This template demonstrates how to develop a test case for Hibernate Envers, using
@@ -17,12 +22,14 @@ import org.junit.Test;
  */
 public class EnversUnitTestCase extends AbstractEnversTestCase {
 
+	public static final String OBJECT_ID = "34234234";
+
 	// Add your entities here.
 	@Override
 	protected Class[] getAnnotatedClasses() {
 		return new Class[] {
-//				Foo.class,
-//				Bar.class
+				MesswertSammlungEntity.class,
+				MesswertEmbeddable.class
 		};
 	}
 
@@ -52,8 +59,32 @@ public class EnversUnitTestCase extends AbstractEnversTestCase {
 
 	// Add your tests, using standard JUnit.
 	@Test
-	public void hhh123Test() throws Exception {
+	public void hhh17179Test() throws Exception {
 		AuditReader reader = getAuditReader();
-		// Do stuff...
+
+		Session session = openSession();
+		Transaction tx = session.beginTransaction();
+		MesswertSammlungEntity main = new MesswertSammlungEntity();
+		main.setObjectId(OBJECT_ID);
+		MesswertEmbeddable embeddable = new MesswertEmbeddable();
+		embeddable.setMesswert(BigDecimal.valueOf(334345));
+		main.getMesswerte().put(1, embeddable);
+		session.persist(main);
+		session.flush();
+		tx.commit();
+		session.clear();
+		Transaction newTx = session.beginTransaction();
+		List<MesswertSammlungEntity> result = session.createQuery(
+				"select m from MesswertSammlungEntity m",
+				MesswertSammlungEntity.class).getResultList();
+		MesswertSammlungEntity messwertSammlungEntity = result.get(0);
+		assert (messwertSammlungEntity.getObjectId().getId().equals(OBJECT_ID));
+		MesswertEmbeddable messwertEmbeddable = messwertSammlungEntity.getMesswerte().get(1);
+		messwertEmbeddable.setMesswert(BigDecimal.valueOf(44));
+		messwertSammlungEntity.getMesswerte().clear();
+		messwertSammlungEntity.getMesswerte().put(2, messwertEmbeddable);
+		session.flush();
+		newTx.commit();
+		session.close();
 	}
 }
